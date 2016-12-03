@@ -1,4 +1,4 @@
-let Router = module.exports = () => {
+const Router = module.exports = function(){
   this.routes = [];
 };
 
@@ -14,7 +14,7 @@ Router.prototype.resolve = (request, response) => {
     //quit if it doesn't, or if the request's method is different from the one stored in the array:
     if (!match || route.method != request.method){ return false; }
 
-    
+
     let urlParts = match.slice(1).map(decodeURIComponent);
     //apply the route's handler function:
     route.handler.apply(null, [request, response].concat(urlParts));

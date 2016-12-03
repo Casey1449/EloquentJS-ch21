@@ -1,0 +1,24 @@
+{
+  "name": "eloquent21",
+  "version": "1.0.0",
+  "description": "A skills sharing website, coded along from chapter 21 of Haverbeke's _Eloquent Javascript._ I translated most of it to ES6.",
+  "main": "router.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Casey1449/EloquentJS-ch21.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Casey1449/EloquentJS-ch21/issues"
+  },
+  "homepage": "https://github.com/Casey1449/EloquentJS-ch21#readme",
+  "dependencies": {
+    "ecstatic": "^2.1.0"
+  }
+}

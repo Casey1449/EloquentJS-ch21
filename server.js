@@ -4,6 +4,8 @@ const ecstatic = require('ecstatic');
 const fileServer = ecstatic({root: './public'});
 const router = new Router();
 const talks = Object.create(null);
+let waiting = [];
+let changes = [];
 
 //if request can't be resolved by our router, intrpret it as a request for a file in the filesystem, and find it through 'public':
 http.createServer((request, response) => {
@@ -38,6 +40,36 @@ const readStreamAsJSON = (stream, callback) => {
 //helper to attach 'servertime' to responses, to calculate 'changesSince':
 const sendTalks = (talks, response) => respondJSON(response, 200, {servertime: Date.now(), talks});
 
+const waitForChanges = (since, response) => {
+  let waiter = {since, response};
+  waiting.push(waiter);
+  setTimeout(() => {
+    let found = waiting.indexOf(waiter);
+    if (found > -1) {
+      waiting.splice(found, 1);
+      sendTalks([], response);
+    }
+  }, 90 * 1000);
+}
+
+const registerChange = title => {
+  changes.push({title, time: Date.now()});
+  waiting.forEach(waiter => sendTalks(getChangedTalks(waiter.since), waiter.response));
+  waiting = [];
+}
+
+const getChangedTalks = since => {
+  let found = [];
+  const alreadySeen = title => found.some(f => f.title = title);
+  for (let i = changes.length - 1; i > 0; i--){
+    let change = changes[i];
+    if (change.time <= since) { break; }
+    else if (alreadySeen(change.title)){ continue; }
+    else if (change.title in talks) { found.push(talks[change.title]); }
+    else { found.push({title: change.title, deleted: true}); }
+  }
+  return found;
+}
 
 //let's add routes!
 router.add('GET', /^\/talks\/([^\/]+)$/, (request, response, title) => {
@@ -99,7 +131,7 @@ router.add('GET', /^\/talks$/, (request, response) => {
       respond(respons, 400, 'Invalid parameter');
     } else {
       let changed = getChangedTalks(since);
-      (changed.length > 0) ? sendTalks(changed, response) : waitforChanges(since, response);
+      (changed.length > 0) ? sendTalks(changed, response) : waitForChanges(since, response);
     }
   }
 });

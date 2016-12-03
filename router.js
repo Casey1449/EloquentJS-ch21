@@ -1,10 +1,12 @@
-const Router = module.exports = function(){
+let Router = module.exports = function(){
   this.routes = [];
 };
 
-Router.prototype.add = (method, url, handler) => this.routes.push({ method, url, handler });
+Router.prototype.add = function(method, url, handler){
+  this.routes.push({ method, url, handler })
+};
 
-Router.prototype.resolve = (request, response) => {
+Router.prototype.resolve = function(request, response){
   //parse the url from the request:
   let path = require('url').parse(request.url).pathname;
 

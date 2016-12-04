@@ -38,7 +38,7 @@ const readStreamAsJSON = (stream, callback) => {
 }
 
 //helper to attach 'servertime' to responses, to calculate 'changesSince':
-const sendTalks = (talks, response) => respondJSON(response, 200, {servertime: Date.now(), talks});
+const sendTalks = (talks, response) => respondJSON(response, 200, {serverTime: Date.now(), talks});
 
 const waitForChanges = (since, response) => {
   let waiter = {since, response};

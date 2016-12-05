@@ -14,10 +14,11 @@ request({pathname: 'talks'}, (error, response) => {
   if (error) {
     reportError(error)
   } else {
+    console.log(response);
     response = JSON.parse(response);
     displayTalks(response.talks);
     lastServerTime = response.serverTime;
-    waitForChanges()
+    waitForChanges();
   };
 });
 
@@ -38,39 +39,87 @@ const displayTalks = talks => {
         }
       } else {
         let node = drawTalk(talk);
-        shown ? talkDiv.replaceChild(node, shown) : talkDiv.replaceChild(node);
+        shown ? talkDiv.replaceChild(node, shown) : talkDiv.appendChild(node);
+        shownTalks[talk.title] = node;
       }
   });
 }
 
-const instantiateTemplate = (name, values) => {
-  const instantiateText = text => text.replace( /\{\{(\w+)\}\}/g, (_, name) => {values[name];});
-  const instantiate = node => {
-    if(node.nodeType == document.ELEMENT_NODE) {
-      let copy = node.cloneNode();
-      for (let i = 0; i < node.children.length; i++)
+// const instantiateTemplate = (name, values) => {
+//   const instantiateText = text => {
+//     return text.replace(/\{\{(\w+)\}\}/g, (_, name) => {
+//       return values[name];
+//     });
+//   };
+//   const instantiate = node => {
+//     if(node.nodeType == document.ELEMENT_NODE) {
+//       let copy = node.cloneNode();
+//       for (let i = 0; i < node.children.length; i++)
+//         copy.appendChild(instantiate(node.childNodes[i]));
+//       return copy;
+//     } else if (node.nodeType == document.TEXT_NODE) {
+//       return document.createTextNode(instantiateText(node.nodeValue));
+//     }
+//   }
+//
+//   let template = document.querySelector(`#template .${name}`);
+//   return instantiate(template);
+// }
+
+function instantiateTemplate(name, values) {
+  function instantiateText(text) {
+    return text.replace(/\{\{(\w+)\}\}/g, function(_, name) {
+      return values[name];
+    });
+  }
+  function instantiate(node) {
+    if (node.nodeType == document.ELEMENT_NODE) {
+      var copy = node.cloneNode();
+      for (var i = 0; i < node.childNodes.length; i++)
         copy.appendChild(instantiate(node.childNodes[i]));
       return copy;
     } else if (node.nodeType == document.TEXT_NODE) {
-      return document.createTextNode(instantiateText(node.nodeValue));
+      return document.createTextNode(
+               instantiateText(node.nodeValue));
+    } else {
+      return node;
     }
   }
 
-  let template = document.querySelector(`#template .${name}`);
+  var template = document.querySelector("#template ." + name);
   return instantiate(template);
 }
 
-const drawTalk = talk => {
-  let node = instantiateTemplate('talk', talk);
-  let comments = node.querySelector('.comments');
-  talk.comments.forEach(comment => { comments.appendChild(instantiateTemplate('comment', comment));});
+// const drawTalk = talk => {
+//   let node = instantiateTemplate('talk', talk);
+//   let comments = node.querySelector('.comments');
+//   talk.comments.forEach(comment => { comments.appendChild(instantiateTemplate('comment', comment));});
+//
+//   node.querySelector('button.del').addEventListener(
+//     'click', deleteTalk.bind(null, talk.title));
+//
+//   let form = node.querySelector('form');
+//   form.addEventListener('submit', (e) => {
+//     e.preventDefault();
+//     addComment(talk.title, form.elements.comment.value);
+//     form.reset();
+//   });
+//   return node;
+// }
+function drawTalk(talk) {
+  var node = instantiateTemplate("talk", talk);
+  var comments = node.querySelector(".comments");
+  talk.comments.forEach(function(comment) {
+    comments.appendChild(
+      instantiateTemplate("comment", comment));
+  });
 
-  // node.querySelector('button.del').addEventListener(
-  //   'click', deleteTalk.bind(null, talk.title));
+  node.querySelector("button.del").addEventListener(
+    "click", deleteTalk.bind(null, talk.title));
 
-  let form = node.querySelector('form');
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
+  var form = node.querySelector("form");
+  form.addEventListener("submit", function(event) {
+    event.preventDefault();
     addComment(talk.title, form.elements.comment.value);
     form.reset();
   });
